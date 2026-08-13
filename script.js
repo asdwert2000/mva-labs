@@ -1,37 +1,44 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // ===== Плавный скролл для якорных ссылок =====
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+// ===== ОТПРАВКА ФОРМЫ В TELEGRAM (AJAX) =====
+const form = document.getElementById('telegramForm');
+const statusDiv = document.getElementById('formStatus');
+
+if (form) {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.textContent;
+        
+        // Показываем загрузку
+        submitBtn.textContent = '⏳ Отправка...';
+        submitBtn.disabled = true;
+        statusDiv.textContent = '';
+        statusDiv.style.color = '#9CA3AF';
+        
+        try {
+            const formData = new FormData(form);
+            const response = await fetch('bot.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                statusDiv.textContent = '✅ Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.';
+                statusDiv.style.color = '#4ADE80';
+                form.reset();
+            } else {
+                statusDiv.textContent = '❌ Ошибка при отправке. Попробуйте ещё раз или напишите в Telegram.';
+                statusDiv.style.color = '#F87171';
             }
-        });
+        } catch (error) {
+            statusDiv.textContent = '❌ Ошибка соединения. Попробуйте ещё раз.';
+            statusDiv.style.color = '#F87171';
+            console.error('Ошибка:', error);
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
     });
-
-    // ===== Кнопка "Наверх" (опционально) =====
-    // Можно добавить позже
-
-    // ===== Анимация появления карточек при скролле =====
-    const cards = document.querySelectorAll('.portfolio__card, .price-card, .utp__item');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1 });
-
-    cards.forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'all 0.6s ease';
-        observer.observe(card);
-    });
-
-    // ===== Консольный привет =====
-    console.log('🚀 MVA Labs — Multiply Your Value by AI');
-    console.log('📧 hello@mvalabs.ru');
-});
+}
