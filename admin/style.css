@@ -247,6 +247,22 @@ body {
 
 .form-control::placeholder { color: #4B5563; }
 
+select.form-control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23D1D5DB' d='M6 8L0 0h12z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+select.form-control option {
+    background-color: #111827;
+    color: #F9FAFB;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
