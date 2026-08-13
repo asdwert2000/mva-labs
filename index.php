@@ -4,6 +4,10 @@
 // Динамический лендинг с подключением к БД
 // ============================================
 
+// Проверяем кеш ДО подключения к БД (экономит время и нагрузку)
+require_once __DIR__ . '/cache.php';
+page_cache_start('home');
+
 // Подключаем конфигурацию админ-панели
 require_once __DIR__ . '/admin/config.php';
 
@@ -17,6 +21,9 @@ $settings = getSettings($pdo);
 
 // ===== ПОЛУЧАЕМ ПОРТФОЛИО =====
 $portfolioItems = $pdo->query("SELECT * FROM portfolio WHERE active = 1 ORDER BY category, sort_order")->fetchAll();
+
+// ===== ПОЛУЧАЕМ ЦЕНОВЫЕ ПАКЕТЫ =====
+$pricePackages = $pdo->query("SELECT * FROM price_packages WHERE active = 1 ORDER BY sort_order, id")->fetchAll();
 
 // Группируем портфолио по категориям
 $portfolioByCategory = [
@@ -275,53 +282,28 @@ $categoryDescriptions = [
             </p>
             
             <div class="prices__grid">
-                <!-- ===== MVP ===== -->
-                <div class="price-card">
-                    <div class="price-card__badge">Старт</div>
-                    <h3>MVP</h3>
-                    <div class="price-card__price">49 900 ₽</div>
-                    <ul class="price-card__list">
-                        <li>До 10 готовых макетов</li>
-                        <li>ИИ-анализ 3 конкурентов</li>
-                        <li>1 раунд правок</li>
-                        <li>Срок: 2–3 дня</li>
-                        <li style="color: #6B7280; font-size: 0.85rem;">Для быстрого старта</li>
-                    </ul>
-                    <a href="#form" class="btn btn--primary btn--full">Выбрать пакет</a>
-                </div>
-                
-                <!-- ===== A/B TEST ===== -->
-                <div class="price-card price-card--popular">
-                    <div class="price-card__badge">Хит продаж</div>
-                    <h3>A/B TEST</h3>
-                    <div class="price-card__price">149 900 ₽</div>
-                    <ul class="price-card__list">
-                        <li>20 уникальных креативов</li>
-                        <li>5 вариантов под рекламу</li>
-                        <li>3 формата под каждый</li>
-                        <li>ИИ-прогноз конверсии</li>
-                        <li>Срок: 5–7 дней</li>
-                        <li style="color: #A855F7; font-size: 0.85rem;">🔥 Оптимальный выбор</li>
-                    </ul>
-                    <a href="#form" class="btn btn--primary btn--full">Выбрать пакет</a>
-                </div>
-                
-                <!-- ===== FULL-STACK ===== -->
-                <div class="price-card">
-                    <div class="price-card__badge">Максимум</div>
-                    <h3>FULL-STACK</h3>
-                    <div class="price-card__price">590 000 ₽</div>
-                    <ul class="price-card__list">
-                        <li>Полная айдентика бренда</li>
-                        <li>Сайт + 3 внутренних страницы</li>
-                        <li>Приложение (10 экранов)</li>
-                        <li>Маркетинг-стратегия на 3 мес</li>
-                        <li>Бренд-бук PDF</li>
-                        <li>Срок: 3–4 недели</li>
-                        <li style="color: #D1D5DB; font-size: 0.85rem;">Полный комплекс</li>
-                    </ul>
-                    <a href="#form" class="btn btn--primary btn--full">Выбрать пакет</a>
-                </div>
+                <?php if (empty($pricePackages)): ?>
+                    <p style="color: #6B7280;">Пакеты появятся в ближайшее время.</p>
+                <?php else: ?>
+                    <?php foreach ($pricePackages as $pkg): ?>
+                        <div class="price-card <?= $pkg['popular'] ? 'price-card--popular' : '' ?>">
+                            <?php if (!empty($pkg['badge'])): ?>
+                                <div class="price-card__badge"><?= htmlspecialchars($pkg['badge']) ?></div>
+                            <?php endif; ?>
+                            <h3><?= htmlspecialchars($pkg['name']) ?></h3>
+                            <div class="price-card__price"><?= htmlspecialchars($pkg['price']) ?></div>
+                            <ul class="price-card__list">
+                                <?php foreach (array_filter(array_map('trim', explode("\n", $pkg['features'] ?? ''))) as $feature): ?>
+                                    <li><?= htmlspecialchars($feature) ?></li>
+                                <?php endforeach; ?>
+                                <?php if (!empty($pkg['note'])): ?>
+                                    <li style="color: <?= $pkg['popular'] ? '#A855F7' : '#6B7280' ?>; font-size: 0.85rem;"><?= htmlspecialchars($pkg['note']) ?></li>
+                                <?php endif; ?>
+                            </ul>
+                            <a href="#form" class="btn btn--primary btn--full">Выбрать пакет</a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             
             <!-- ===== SEO-ТЕКСТ ПОД ЦЕНАМИ ===== -->
@@ -424,3 +406,4 @@ $categoryDescriptions = [
     <script src="script.js"></script>
 </body>
 </html>
+<?php page_cache_end('home'); ?>

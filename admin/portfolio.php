@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'includes/auth.php';
+require_once __DIR__ . '/../cache.php';
 requireLogin();
 
 // ===== ОБРАБОТКА ДЕЙСТВИЙ =====
@@ -20,6 +21,7 @@ if ($action === 'delete' && $id) {
     }
     $stmt = $pdo->prepare("DELETE FROM portfolio WHERE id = ?");
     $stmt->execute([$id]);
+    clear_page_cache();
     header('Location: /admin/portfolio.php?deleted=1');
     exit;
 }
@@ -73,12 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             category = ?, title = ?, description = ?, result = ?, gradient = ?, image_url = ?, sort_order = ?, active = ? 
             WHERE id = ?");
         $stmt->execute([$category, $title, $description, $result, $gradient, $imageUrl, $sort_order, $active, $id]);
+        clear_page_cache();
         header('Location: /admin/portfolio.php?updated=1');
         exit;
     } else {
         $stmt = $pdo->prepare("INSERT INTO portfolio (category, title, description, result, gradient, image_url, sort_order, active) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$category, $title, $description, $result, $gradient, $imageUrl, $sort_order, $active]);
+        clear_page_cache();
         header('Location: /admin/portfolio.php?added=1');
         exit;
     }
@@ -117,6 +121,7 @@ $categories = ['sites' => 'Сайты', 'apps' => 'Приложения', 'strat
                 <a href="/admin/index.php">📊 Дашборд</a>
                 <a href="/admin/editor.php?page=hero">✏️ Редактор страниц</a>
                 <a href="/admin/portfolio.php" class="active">🖼️ Портфолио</a>
+                <a href="/admin/prices.php">💰 Цены</a>
                 <a href="/admin/leads.php">📩 Заявки</a>
                 <a href="/admin/settings.php">⚙️ Настройки</a>
                 <a href="/admin/logout.php" style="margin-top: 40px; color: #F87171;">🚪 Выход</a>

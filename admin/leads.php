@@ -42,6 +42,7 @@ $leads = $pdo->query("SELECT * FROM leads ORDER BY created_at DESC")->fetchAll()
                 <a href="/admin/index.php">📊 Дашборд</a>
                 <a href="/admin/editor.php?page=hero">✏️ Редактор страниц</a>
                 <a href="/admin/portfolio.php">🖼️ Портфолио</a>
+                <a href="/admin/prices.php">💰 Цены</a>
                 <a href="/admin/leads.php" class="active">📩 Заявки</a>
                 <a href="/admin/settings.php">⚙️ Настройки</a>
                 <a href="/admin/logout.php" style="margin-top: 40px; color: #F87171;">🚪 Выход</a>

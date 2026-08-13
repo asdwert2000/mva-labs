@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'includes/auth.php';
+require_once __DIR__ . '/../cache.php';
 requireLogin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$value, $settingKey]);
         }
     }
+    clear_page_cache();
     $success = '✅ Настройки сохранены!';
 }
 
@@ -36,6 +38,7 @@ $settings = getSettings($pdo);
                 <a href="/admin/index.php">📊 Дашборд</a>
                 <a href="/admin/editor.php?page=hero">✏️ Редактор страниц</a>
                 <a href="/admin/portfolio.php">🖼️ Портфолио</a>
+                <a href="/admin/prices.php">💰 Цены</a>
                 <a href="/admin/leads.php">📩 Заявки</a>
                 <a href="/admin/settings.php" class="active">⚙️ Настройки</a>
                 <a href="/admin/logout.php" style="margin-top: 40px; color: #F87171;">🚪 Выход</a>

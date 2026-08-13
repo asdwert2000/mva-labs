@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'includes/auth.php';
+require_once __DIR__ . '/../cache.php';
 requireLogin();
 
 $pageKey = $_GET['page'] ?? 'hero';
@@ -25,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (updatePageContent($pdo, $pageKey, $data)) {
         $success = '✅ Контент успешно обновлён!';
+        clear_page_cache();
         $page = getPageContent($pdo, $pageKey); // Перезагружаем данные
     } else {
         $error = '❌ Ошибка при сохранении';
@@ -61,6 +63,7 @@ $pages = [
                 <a href="/admin/index.php">📊 Дашборд</a>
                 <a href="/admin/editor.php?page=hero" class="active">✏️ Редактор страниц</a>
                 <a href="/admin/portfolio.php">🖼️ Портфолио</a>
+                <a href="/admin/prices.php">💰 Цены</a>
                 <a href="/admin/leads.php">📩 Заявки</a>
                 <a href="/admin/settings.php">⚙️ Настройки</a>
                 <a href="/admin/logout.php" style="margin-top: 40px; color: #F87171;">🚪 Выход</a>

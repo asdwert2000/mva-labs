@@ -108,3 +108,36 @@ CREATE TABLE `leads` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ==========================================
+-- ТАБЛИЦА: ЦЕНОВЫЕ ПАКЕТЫ
+-- ==========================================
+CREATE TABLE `price_packages` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `badge` VARCHAR(100),
+    `price` VARCHAR(100) NOT NULL,
+    `features` TEXT,
+    `note` VARCHAR(255),
+    `popular` TINYINT(1) DEFAULT 0,
+    `sort_order` INT(11) DEFAULT 0,
+    `active` TINYINT(1) DEFAULT 1,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `price_packages` (`name`, `badge`, `price`, `features`, `note`, `popular`, `sort_order`) VALUES
+('MVP', 'Старт', '49 900 ₽', 'До 10 готовых макетов
+ИИ-анализ 3 конкурентов
+1 раунд правок
+Срок: 2–3 дня', 'Для быстрого старта', 0, 1),
+('A/B TEST', 'Хит продаж', '149 900 ₽', '20 уникальных креативов
+5 вариантов под рекламу
+3 формата под каждый
+ИИ-прогноз конверсии
+Срок: 5–7 дней', '🔥 Оптимальный выбор', 1, 2),
+('FULL-STACK', 'Максимум', '590 000 ₽', 'Полная айдентика бренда
+Сайт + 3 внутренних страницы
+Приложение (10 экранов)
+Маркетинг-стратегия на 3 мес
+Бренд-бук PDF
+Срок: 3–4 недели', 'Полный комплекс', 0, 3);
