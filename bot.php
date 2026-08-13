@@ -5,8 +5,8 @@
 // ============================================
 
 // ===== НАСТРОЙКИ (ЗАМЕНИТЕ НА СВОИ) =====
-define('BOT_TOKEN', '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'); // ВАШ ТОКЕН ОТ BOTFATHER
-define('CHAT_ID', '123456789'); // ВАШ ID В TELEGRAM (узнать у @userinfobot)
+define('BOT_TOKEN', '8977608669:AAFpm5WxuRmAvsBVIIaGzfz0GsjE6DtkU7o'); // ВАШ ТОКЕН ОТ BOTFATHER
+define('CHAT_ID', '351341132'); // ВАШ ID В TELEGRAM (узнать у @userinfobot)
 
 // ===== ФУНКЦИЯ ОТПРАВКИ В TELEGRAM =====
 function sendToTelegram($message) {
