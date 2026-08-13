@@ -43,6 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Дополнительные поля (если есть)
     $message = htmlspecialchars($_POST['message'] ?? '');
     $site = htmlspecialchars($_POST['site'] ?? '');
+
+    // ===== СОХРАНЯЕМ ЗАЯВКУ В БД (для админки) =====
+    try {
+        require_once __DIR__ . '/admin/includes/db.php';
+        $stmt = db()->prepare("INSERT INTO leads (name, phone, email, package, site, message)
+                               VALUES (:name, :phone, :email, :package, :site, :message)");
+        $stmt->execute([
+            ':name' => $name, ':phone' => $phone, ':email' => $email,
+            ':package' => $package, ':site' => $site, ':message' => $message,
+        ]);
+    } catch (Throwable $e) {
+        // Не блокируем отправку, если БД недоступна
+    }
     
     // ===== ФОРМИРУЕМ КРАСИВОЕ СООБЩЕНИЕ =====
     $telegramMessage = "🚀 <b>НОВАЯ ЗАЯВКА В MVA LABS</b> 🚀\n\n";

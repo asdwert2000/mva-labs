@@ -1,0 +1,10 @@
+document.addEventListener('DOMContentLoaded', function () {
+    // Автоматическое скрытие алертов
+    document.querySelectorAll('.alert').forEach(function (el) {
+        setTimeout(function () {
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = '0';
+            setTimeout(function () { el.remove(); }, 500);
+        }, 4000);
+    });
+});
