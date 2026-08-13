@@ -364,14 +364,15 @@ img {
     font-weight: 700;
     font-size: clamp(0.9rem, 1.2vw, 1.2rem);
     color: rgba(255,255,255,0.7);
+    background: linear-gradient(135deg, #2D1B69, #120A2B);
+    overflow: hidden;
 }
 
-.portfolio__placeholder {
-    background: rgba(0,0,0,0.4);
-    padding: 10px 24px;
-    border-radius: 50px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+.portfolio__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .portfolio__info {
