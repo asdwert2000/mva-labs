@@ -113,10 +113,9 @@ $categoryDescriptions = [
     <!-- ========================================== -->
     <header class="header" role="banner">
         <div class="container header__inner">
-            <div class="logo" itemscope itemtype="https://schema.org/Organization">
-                <span class="logo__multiply" aria-hidden="true">×</span>
-                <span class="logo__text">MVA <span class="logo__labs">Labs</span></span>
-                <meta itemprop="name" content="<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>">
+<div class="logo" itemscope itemtype="https://schema.org/Organization">
+                <img src="images/logo.svg" alt="MVA Labs" class="logo__img" width="142" height="32">
+                <meta itemprop="name" content="MVA Labs">
                 <meta itemprop="url" content="<?= htmlspecialchars($settings['site_url'] ?? 'https://mvalabs.ru') ?>/">
             </div>
             
@@ -389,8 +388,7 @@ $categoryDescriptions = [
     <footer class="footer" id="contacts" role="contentinfo">
         <div class="container footer__inner">
             <div class="logo">
-                <span class="logo__multiply" aria-hidden="true">×</span>
-                <span class="logo__text">MVA <span class="logo__labs">Labs</span></span>
+                <img src="images/logo.svg" alt="MVA Labs" class="logo__img" width="142" height="32">
             </div>
             
             <p class="footer__slogan">

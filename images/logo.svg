@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 284 64" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">MVA Labs</title>
+  <defs>
+    <linearGradient id="violet" x1="8" y1="12" x2="53" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d8b4fe"/>
+      <stop offset="0.48" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Compact M mark -->
+  <path d="M7 49V16l16 23 16-23v33" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M39 49 51 20 59 39" fill="none" stroke="url(#violet)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="56" cy="49" r="4" fill="#a855f7"/>
+
+  <!-- Wordmark -->
+  <text x="78" y="42" fill="#f8fafc" font-family="Inter, Manrope, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-1">MVA</text>
+  <text x="151" y="42" fill="url(#violet)" font-family="Inter, Manrope, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-1">Labs</text>
+</svg>
