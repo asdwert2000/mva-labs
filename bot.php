@@ -46,12 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ===== СОХРАНЯЕМ ЗАЯВКУ В БД (для админки) =====
     try {
-        require_once __DIR__ . '/admin/includes/db.php';
-        $stmt = db()->prepare("INSERT INTO leads (name, phone, email, package, site, message)
-                               VALUES (:name, :phone, :email, :package, :site, :message)");
+        require_once __DIR__ . '/admin/config.php';
+        $stmt = $pdo->prepare("INSERT INTO leads (name, phone, email, package, site, message, ip)
+                               VALUES (:name, :phone, :email, :package, :site, :message, :ip)");
         $stmt->execute([
             ':name' => $name, ':phone' => $phone, ':email' => $email,
             ':package' => $package, ':site' => $site, ':message' => $message,
+            ':ip' => $_SERVER['REMOTE_ADDR'] ?? '',
         ]);
     } catch (Throwable $e) {
         // Не блокируем отправку, если БД недоступна

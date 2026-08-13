@@ -1,3 +1,49 @@
+<?php
+// ============================================
+// MVA Labs — ГЛАВНАЯ СТРАНИЦА
+// Динамический лендинг с подключением к БД
+// ============================================
+
+// Подключаем конфигурацию админ-панели
+require_once __DIR__ . '/admin/config.php';
+
+// ===== ПОЛУЧАЕМ ВЕСЬ КОНТЕНТ ИЗ БАЗЫ ДАННЫХ =====
+$hero = getPageContent($pdo, 'hero');
+$utp = getPageContent($pdo, 'utp');
+$portfolioText = getPageContent($pdo, 'portfolio');
+$pricesText = getPageContent($pdo, 'prices');
+$footerSeo = getPageContent($pdo, 'footer_seo');
+$settings = getSettings($pdo);
+
+// ===== ПОЛУЧАЕМ ПОРТФОЛИО =====
+$portfolioItems = $pdo->query("SELECT * FROM portfolio WHERE active = 1 ORDER BY category, sort_order")->fetchAll();
+
+// Группируем портфолио по категориям
+$portfolioByCategory = [
+    'sites' => [],
+    'apps' => [],
+    'strategies' => []
+];
+
+foreach ($portfolioItems as $item) {
+    if (isset($portfolioByCategory[$item['category']])) {
+        $portfolioByCategory[$item['category']][] = $item;
+    }
+}
+
+// ===== НАЗВАНИЯ КАТЕГОРИЙ ДЛЯ ВЫВОДА =====
+$categoryLabels = [
+    'sites' => '📱 Разработка сайтов на заказ',
+    'apps' => '📲 Дизайн мобильных приложений',
+    'strategies' => '📊 Маркетинговые стратегии'
+];
+
+$categoryDescriptions = [
+    'sites' => 'Мы создаём продающие сайты с уникальным дизайном, адаптивной вёрсткой и ИИ-анализом поведения пользователей. От лендингов до многостраничных корпоративных порталов.',
+    'apps' => 'Разрабатываем UI/UX дизайн для приложений под iOS и Android. Учитываем поведенческие паттерны пользователей, чтобы увеличить удержание и конверсию.',
+    'strategies' => 'Разрабатываем визуальные маркетинговые стратегии для вывода брендов на рынок, повышения узнаваемости и роста продаж. Используем ИИ-анализ конкурентов и трендов.'
+];
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,32 +51,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- ===== ОСНОВНЫЕ SEO-МЕТА ТЕГИ ===== -->
-    <title>MVA Labs — Маркетинг и дизайн с ИИ. Умножаем ваш бизнес</title>
-    <meta name="description" content="MVA Labs: маркетинговое агентство полного цикла с использованием искусственного интеллекта. Создаём сайты, мобильные приложения и визуальные стратегии. Умножаем конверсию, креатив и скорость. Бесплатная консультация.">
-    <meta name="keywords" content="маркетинг с ии, дизайн с ии, создание сайтов на заказ, дизайн мобильных приложений, маркетинговая стратегия, нейросети в дизайне, разработка бренда, визуальная айдентика, MVA Labs, агентство маркетинга, дизайн сайтов, ui ux дизайн, контекстная реклама, таргетинг">
-    <link rel="canonical" href="https://mvalabs.ru/">
+    <title><?= htmlspecialchars($hero['meta_title'] ?? 'MVA Labs — Маркетинг и дизайн с ИИ. Умножаем ваш бизнес') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($hero['meta_description'] ?? 'MVA Labs: маркетинговое агентство полного цикла с использованием искусственного интеллекта. Создаём сайты, мобильные приложения и визуальные стратегии. Умножаем конверсию, креатив и скорость. Бесплатная консультация.') ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($hero['meta_keywords'] ?? 'маркетинг с ии, дизайн с ии, создание сайтов на заказ, дизайн мобильных приложений, маркетинговая стратегия, нейросети в дизайне, разработка бренда, визуальная айдентика, MVA Labs') ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($settings['site_url'] ?? 'https://mvalabs.ru') ?>/">
     
     <!-- ===== OPEN GRAPH (для соцсетей) ===== -->
-    <meta property="og:title" content="MVA Labs — Маркетинг и дизайн с искусственным интеллектом">
-    <meta property="og:description" content="Создаём сайты, приложения и маркетинговые стратегии, умноженные на ИИ. Конверсия ×2, скорость ×10. Закажите консультацию.">
-    <meta property="og:image" content="https://mvalabs.ru/images/og-image.jpg">
-    <meta property="og:url" content="https://mvalabs.ru/">
+    <meta property="og:title" content="<?= htmlspecialchars($hero['meta_title'] ?? 'MVA Labs — Маркетинг и дизайн с искусственным интеллектом') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($hero['meta_description'] ?? 'Создаём сайты, приложения и маркетинговые стратегии, умноженные на ИИ. Конверсия ×2, скорость ×10. Закажите консультацию.') ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($settings['site_url'] ?? '') ?><?= htmlspecialchars($settings['og_image'] ?? '/images/og-image.jpg') ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($settings['site_url'] ?? 'https://mvalabs.ru') ?>/">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="MVA Labs">
+    <meta property="og:site_name" content="<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>">
     <meta property="og:locale" content="ru_RU">
     
     <!-- ===== TWITTER CARDS ===== -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MVA Labs — Маркетинг и дизайн с ИИ">
-    <meta name="twitter:description" content="Умножаем ваш бизнес через искусственный интеллект. Сайты, приложения, стратегии.">
-    <meta name="twitter:image" content="https://mvalabs.ru/images/og-image.jpg">
+    <meta name="twitter:title" content="<?= htmlspecialchars($hero['meta_title'] ?? 'MVA Labs — Маркетинг и дизайн с ИИ') ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($hero['meta_description'] ?? 'Умножаем ваш бизнес через искусственный интеллект. Сайты, приложения, стратегии.') ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($settings['site_url'] ?? '') ?><?= htmlspecialchars($settings['og_image'] ?? '/images/og-image.jpg') ?>">
     
     <!-- ===== ДОПОЛНИТЕЛЬНЫЕ SEO ===== -->
     <meta name="robots" content="index, follow">
     <meta name="revisit-after" content="7 days">
     <meta name="language" content="Russian">
-    <meta name="author" content="MVA Labs">
-    <meta name="copyright" content="MVA Labs">
+    <meta name="author" content="<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>">
+    <meta name="copyright" content="<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>">
     <meta name="geo.region" content="RU">
     
     <!-- ===== ТЕХНИЧЕСКИЕ МЕТА-ТЕГИ ===== -->
@@ -46,11 +92,11 @@
     {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
-        "name": "MVA Labs",
-        "description": "Агентство маркетинга и дизайна с использованием искусственного интеллекта. Создаём сайты, приложения и маркетинговые стратегии.",
-        "url": "https://mvalabs.ru/",
-        "telephone": "+7-XXX-XXX-XX-XX",
-        "email": "hello@mvalabs.ru",
+        "name": "<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>",
+        "description": "<?= htmlspecialchars($hero['meta_description'] ?? 'Агентство маркетинга и дизайна с использованием искусственного интеллекта.') ?>",
+        "url": "<?= htmlspecialchars($settings['site_url'] ?? 'https://mvalabs.ru') ?>/",
+        "telephone": "<?= htmlspecialchars($settings['phone'] ?? '+7-XXX-XXX-XX-XX') ?>",
+        "email": "<?= htmlspecialchars($settings['email'] ?? 'hello@mvalabs.ru') ?>",
         "address": {
             "@type": "PostalAddress",
             "addressCountry": "RU"
@@ -70,8 +116,8 @@
             <div class="logo" itemscope itemtype="https://schema.org/Organization">
                 <span class="logo__multiply" aria-hidden="true">×</span>
                 <span class="logo__text">MVA <span class="logo__labs">Labs</span></span>
-                <meta itemprop="name" content="MVA Labs">
-                <meta itemprop="url" content="https://mvalabs.ru/">
+                <meta itemprop="name" content="<?= htmlspecialchars($settings['site_name'] ?? 'MVA Labs') ?>">
+                <meta itemprop="url" content="<?= htmlspecialchars($settings['site_url'] ?? 'https://mvalabs.ru') ?>/">
             </div>
             
             <button class="burger" aria-label="Открыть меню" aria-expanded="false">
@@ -100,15 +146,12 @@
                 <div class="hero__badge">🚀 Искусственный интеллект в дизайне</div>
                 
                 <h1 class="hero__title">
-                    Маркетинг и дизайн,<br>
-                    <span class="hero__highlight">умноженный на ИИ</span>
+                    <?= $hero['title'] ?? 'Маркетинг и дизайн,<br><span class="hero__highlight">умноженный на ИИ</span>' ?>
                 </h1>
                 
-                <p class="hero__desc">
-                    <strong>MVA Labs</strong> — маркетинговое агентство, которое использует искусственный интеллект для создания сайтов, 
-                    мобильных приложений и визуальных стратегий. Мы превращаем маркетинговые данные в дизайн-решения 
-                    за часы, а не недели. <strong>Умножаем вашу ценность с помощью нейросетей.</strong>
-                </p>
+                <div class="hero__desc">
+                    <?= $hero['content'] ?? '<strong>MVA Labs</strong> — маркетинговое агентство, которое использует искусственный интеллект для создания сайтов, мобильных приложений и визуальных стратегий. Мы превращаем маркетинговые данные в дизайн-решения за часы, а не недели. <strong>Умножаем вашу ценность с помощью нейросетей.</strong>' ?>
+                </div>
                 
                 <div class="hero__buttons">
                     <a href="#form" class="btn btn--primary">Рассчитать стоимость</a>
@@ -129,7 +172,7 @@
     <section class="utp" id="services" aria-labelledby="utp-title">
         <div class="container">
             <h2 class="section-title" id="utp-title">
-                Что мы <span class="highlight">умножаем</span>?
+                <?= $utp['title'] ?? 'Что мы <span class="highlight">умножаем</span>?' ?>
             </h2>
             <p class="section-subtitle">
                 MVA Labs — агентство маркетинга и дизайна с искусственным интеллектом. 
@@ -137,45 +180,28 @@
             </p>
             
             <div class="utp__grid">
+                <?= $utp['content'] ?? '
                 <div class="utp__item">
                     <div class="utp__icon" aria-hidden="true">🔄</div>
                     <h3>Креатив</h3>
-                    <p>
-                        <strong>Генерируем сотни вариантов дизайна</strong> по одному брифу. 
-                        Искусственный интеллект масштабирует идеи без потери качества. 
-                        Вы получаете максимум визуальных решений для A/B-тестирования.
-                    </p>
+                    <p><strong>Генерируем сотни вариантов дизайна</strong> по одному брифу. Искусственный интеллект масштабирует идеи без потери качества. Вы получаете максимум визуальных решений для A/B-тестирования.</p>
                 </div>
-                
                 <div class="utp__item">
                     <div class="utp__icon" aria-hidden="true">📈</div>
                     <h3>Конверсия</h3>
-                    <p>
-                        <strong>Каждый элемент дизайна просчитан нейросетью</strong> на основе 
-                        данных о поведении вашей целевой аудитории. Мы создаём не просто 
-                        красиво, а эффективно — с прогнозируемым ROI.
-                    </p>
+                    <p><strong>Каждый элемент дизайна просчитан нейросетью</strong> на основе данных о поведении вашей целевой аудитории. Мы создаём не просто красиво, а эффективно — с прогнозируемым ROI.</p>
                 </div>
-                
                 <div class="utp__item">
                     <div class="utp__icon" aria-hidden="true">⚡</div>
                     <h3>Скорость</h3>
-                    <p>
-                        <strong>Запускаем A/B-тестирование нескольких гипотез</strong> в тот момент, 
-                        когда конкуренты только согласовывают первый макет. 
-                        Время вывода новых креативов сокращается в 10 раз.
-                    </p>
+                    <p><strong>Запускаем A/B-тестирование нескольких гипотез</strong> в тот момент, когда конкуренты только согласовывают первый макет. Время вывода новых креативов сокращается в 10 раз.</p>
                 </div>
-                
                 <div class="utp__item">
                     <div class="utp__icon" aria-hidden="true">💰</div>
                     <h3>Бюджет</h3>
-                    <p>
-                        <strong>Получайте результат топ-дизайн-студии</strong>, платя только за 
-                        автоматизацию процессов. Мы оптимизируем стоимость за счёт 
-                        использования нейросетей, экономя до 70% вашего бюджета.
-                    </p>
+                    <p><strong>Получайте результат топ-дизайн-студии</strong>, платя только за автоматизацию процессов. Мы оптимизируем стоимость за счёт использования нейросетей, экономя до 70% вашего бюджета.</p>
                 </div>
+                ' ?>
             </div>
         </div>
     </section>
@@ -186,107 +212,44 @@
     <section class="portfolio" id="portfolio" aria-labelledby="portfolio-title">
         <div class="container">
             <h2 class="section-title" id="portfolio-title">
-                Примеры <span class="highlight">работ</span>
+                <?= $portfolioText['title'] ?? 'Примеры <span class="highlight">работ</span>' ?>
             </h2>
             <p class="section-subtitle">
-                Реальные проекты MVA Labs — от стратегии до готового продукта. 
-                Сайты, приложения и маркетинговые стратегии для бизнеса любого масштаба.
+                <?= $portfolioText['content'] ?? 'Реальные проекты MVA Labs — от стратегии до готового продукта. Сайты, приложения и маркетинговые стратегии для бизнеса любого масштаба.' ?>
             </p>
             
-            <!-- ===== САЙТЫ ===== -->
+            <?php
+            // Перебираем категории портфолио
+            foreach ($categoryLabels as $categoryKey => $categoryLabel):
+                if (empty($portfolioByCategory[$categoryKey])) continue;
+            ?>
             <div class="portfolio__category">
-                <h3 class="category-title">📱 Разработка сайтов на заказ</h3>
+                <h3 class="category-title"><?= $categoryLabel ?></h3>
                 <p style="color: #9CA3AF; margin-bottom: 20px; font-size: 0.95rem;">
-                    Мы создаём <strong>продающие сайты</strong> с уникальным дизайном, адаптивной вёрсткой 
-                    и ИИ-анализом поведения пользователей. От лендингов до многостраничных корпоративных порталов.
+                    <?= $categoryDescriptions[$categoryKey] ?? '' ?>
                 </p>
                 
                 <div class="portfolio__grid">
+                    <?php foreach ($portfolioByCategory[$categoryKey] as $item): ?>
                     <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/site-1.jpg" alt="Лендинг для HR-платформы">
+                        <div class="portfolio__image" style="background: linear-gradient(135deg, <?= htmlspecialchars($item['gradient'] ?? '#2D1B69, #120A2B') ?>);">
+                            <?php if (!empty($item['image_url'])): ?>
+                                <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="<?= htmlspecialchars($item['title']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <?php else: ?>
+                                <span class="portfolio__placeholder"><?= htmlspecialchars($item['title']) ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="portfolio__info">
-                            <h4>Лендинг для HR-платформы</h4>
-                            <p>Разработали дизайн сайта с нуля. <strong>Конверсия выросла на 27%</strong> благодаря A/B-тестированию и адаптивной вёрстке.</p>
+                            <h4><?= htmlspecialchars($item['title']) ?></h4>
+                            <p><?= htmlspecialchars($item['description'] ?? '') ?> <strong><?= htmlspecialchars($item['result'] ?? '') ?></strong></p>
                         </div>
                     </div>
-                    
-                    <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/site-2.jpg" alt="Сайт сети ресторанов">
-                        </div>
-                        <div class="portfolio__info">
-                            <h4>Сайт сети ресторанов</h4>
-                            <p>Создали фирменный стиль и дизайн главной страницы. <strong>Бронирования выросли на 34%</strong> после редизайна.</p>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
+            <?php endforeach; ?>
             
-            <!-- ===== ПРИЛОЖЕНИЯ ===== -->
-            <div class="portfolio__category">
-                <h3 class="category-title">📲 Дизайн мобильных приложений</h3>
-                <p style="color: #9CA3AF; margin-bottom: 20px; font-size: 0.95rem;">
-                    Разрабатываем <strong>UI/UX дизайн для приложений</strong> под iOS и Android. 
-                    Учитываем поведенческие паттерны пользователей, чтобы увеличить удержание и конверсию.
-                </p>
-                
-                <div class="portfolio__grid">
-                    <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/app-1.jpg" alt="Приложение для доставки">
-                        </div>
-                        <div class="portfolio__info">
-                            <h4>Приложение для доставки</h4>
-                            <p>Разработали UX-архитектуру и дизайн экранов. <strong>Средний чек увеличился на 12%</strong> за счёт улучшения навигации.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/app-2.jpg" alt="Приложение для фитнес-клуба">
-                        </div>
-                        <div class="portfolio__info">
-                            <h4>Приложение для фитнес-клуба</h4>
-                            <p>Спроектировали персонализированный интерфейс. <strong>Удержание пользователей (Retention) выросло на 22%.</strong></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ===== СТРАТЕГИИ ===== -->
-            <div class="portfolio__category">
-                <h3 class="category-title">📊 Маркетинговые стратегии</h3>
-                <p style="color: #9CA3AF; margin-bottom: 20px; font-size: 0.95rem;">
-                    Разрабатываем <strong>визуальные маркетинговые стратегии</strong> для вывода брендов на рынок, 
-                    повышения узнаваемости и роста продаж. Используем ИИ-анализ конкурентов и трендов.
-                </p>
-                
-                <div class="portfolio__grid">
-                    <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/strategy-1.jpg" alt="Стратегия для магазина косметики">
-                        </div>
-                        <div class="portfolio__info">
-                            <h4>Стратегия для магазина косметики</h4>
-                            <p>Разработали визуальный контент-план и бренд-бук. <strong>Вовлечённость в соцсетях выросла на 41%.</strong></p>
-                        </div>
-                    </div>
-                    
-                    <div class="portfolio__card">
-                        <div class="portfolio__image">
-                            <img src="images/strategy-2.jpg" alt="Ребрендинг сети кофеен">
-                        </div>
-                        <div class="portfolio__info">
-                            <h4>Ребрендинг сети кофеен</h4>
-                            <p>Обновили айдентику, логотип и визуальную стратегию. <strong>Средний чек вырос на 15%.</strong></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ===== ТЕКСТ ДЛЯ СЕО ПОСЛЕ ПОРТФОЛИО ===== -->
+            <!-- ===== Блок "Почему выбирают MVA Labs" ===== -->
             <div style="margin-top: 40px; padding: 30px; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
                 <h4 style="color: #D1D5DB; font-size: 1.2rem; margin-bottom: 12px;">Почему MVA Labs выбирают для разработки дизайна?</h4>
                 <p style="color: #9CA3AF; line-height: 1.8; font-size: 0.95rem;">
@@ -306,11 +269,10 @@
     <section class="prices" id="prices" aria-labelledby="prices-title">
         <div class="container">
             <h2 class="section-title" id="prices-title">
-                Выберите свой <span class="highlight">пакет</span>
+                <?= $pricesText['title'] ?? 'Выберите свой <span class="highlight">пакет</span>' ?>
             </h2>
             <p class="section-subtitle">
-                <strong>Умножьте свой бизнес</strong> с MVA Labs. Выберите подходящий тариф 
-                или закажите индивидуальное решение под ваши задачи.
+                <?= $pricesText['content'] ?? '<strong>Умножьте свой бизнес</strong> с MVA Labs. Выберите подходящий тариф или закажите индивидуальное решение под ваши задачи.' ?>
             </p>
             
             <div class="prices__grid">
@@ -414,7 +376,7 @@
                     <button type="submit" class="btn btn--primary btn--full" id="submitBtn">Отправить заявку</button>
                     <p class="form__note" id="formStatus"></p>
                     <p class="form__note">
-                        Или напишите нам в Telegram: <a href="https://t.me/mva_labs_bot" target="_blank" rel="noopener noreferrer">@mva_labs_bot</a>
+                        Или напишите нам в Telegram: <a href="https://t.me/<?= htmlspecialchars($settings['telegram_bot'] ?? 'mva_labs_bot') ?>" target="_blank" rel="noopener noreferrer">@<?= htmlspecialchars($settings['telegram_bot'] ?? 'mva_labs_bot') ?></a>
                     </p>
                 </form>
             </div>
@@ -436,45 +398,26 @@
             </p>
             
             <div class="footer__contacts">
-                <a href="mailto:hello@mvalabs.ru" aria-label="Написать на email">📧 hello@mvalabs.ru</a>
-                <a href="tel:+7XXXXXXXXXX" aria-label="Позвонить по телефону">📞 +7 (XXX) XXX-XX-XX</a>
-                <a href="https://t.me/mva_labs_bot" target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram">💬 Telegram</a>
+                <a href="mailto:<?= htmlspecialchars($settings['email'] ?? 'hello@mvalabs.ru') ?>" aria-label="Написать на email">📧 <?= htmlspecialchars($settings['email'] ?? 'hello@mvalabs.ru') ?></a>
+                <a href="tel:<?= htmlspecialchars($settings['phone'] ?? '+7XXXXXXXXXX') ?>" aria-label="Позвонить по телефону">📞 <?= htmlspecialchars($settings['phone'] ?? '+7 (XXX) XXX-XX-XX') ?></a>
+                <a href="https://t.me/<?= htmlspecialchars($settings['telegram_bot'] ?? 'mva_labs_bot') ?>" target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram">💬 Telegram</a>
             </div>
             
             <!-- ===== БОЛЬШОЙ SEO-ТЕКСТ В ПОДВАЛЕ ===== -->
             <div class="footer__seo">
-                <h3>MVA Labs — агентство маркетинга и дизайна с искусственным интеллектом</h3>
-                <p>
-                    <strong>MVA Labs</strong> — это <strong>маркетинговое агентство полного цикла</strong>, 
-                    которое использует современные нейросети для создания <strong>сайтов, мобильных приложений 
-                    и визуальных стратегий</strong>. Мы объединяем креативность дизайнеров с мощью искусственного 
-                    интеллекта, чтобы сокращать сроки выполнения проектов в 3–10 раз и повышать конверсию для 
-                    наших клиентов.
-                </p>
-                <p style="margin-top: 12px;">
-                    Наши услуги включают: <strong>разработку дизайна сайтов</strong> (лендинги, корпоративные порталы, 
-                    интернет-магазины), <strong>UI/UX дизайн мобильных приложений</strong>, <strong>создание 
-                    маркетинговых стратегий</strong>, <strong>разработку бренд-буков</strong> и 
-                    <strong>визуальной айдентики</strong>. Мы работаем с бизнесом любого масштаба — 
-                    от стартапов до крупных компаний — и адаптируем решения под ваш бюджет.
-                </p>
-                <p style="margin-top: 12px;">
-                    <strong>Почему выбирают MVA Labs?</strong> Потому что мы не просто делаем «красиво». 
-                    Мы создаём дизайн, который <strong>продаёт, удерживает и масштабирует</strong>. 
-                    Каждый проект начинается с анализа данных: мы изучаем поведение вашей целевой аудитории, 
-                    конкурентную среду и тренды в вашей нише. Только после этого мы приступаем к визуализации, 
-                    используя ИИ для генерации сотен вариантов макетов. Это позволяет нам находить 
-                    <strong>оптимальные визуальные решения</strong> за минимальное время.
-                </p>
-                <p style="margin-top: 12px;">
-                    Хотите <strong>умножить свой бизнес</strong> с помощью искусственного интеллекта? 
-                    Оставьте заявку на бесплатную консультацию, и мы покажем вам, как выглядит 
-                    <strong>маркетинг будущего</strong> уже сегодня. <strong>MVA Labs — Multiply Your Value by AI.</strong>
-                </p>
+                <h3><?= $footerSeo['title'] ?? 'MVA Labs — агентство маркетинга и дизайна с искусственным интеллектом' ?></h3>
+                <div>
+                    <?= $footerSeo['content'] ?? '
+                    <p><strong>MVA Labs</strong> — это <strong>маркетинговое агентство полного цикла</strong>, которое использует современные нейросети для создания <strong>сайтов, мобильных приложений и визуальных стратегий</strong>. Мы объединяем креативность дизайнеров с мощью искусственного интеллекта, чтобы сокращать сроки выполнения проектов в 3–10 раз и повышать конверсию для наших клиентов.</p>
+                    <p style="margin-top: 12px;">Наши услуги включают: <strong>разработку дизайна сайтов</strong> (лендинги, корпоративные порталы, интернет-магазины), <strong>UI/UX дизайн мобильных приложений</strong>, <strong>создание маркетинговых стратегий</strong>, <strong>разработку бренд-буков</strong> и <strong>визуальной айдентики</strong>. Мы работаем с бизнесом любого масштаба — от стартапов до крупных компаний — и адаптируем решения под ваш бюджет.</p>
+                    <p style="margin-top: 12px;"><strong>Почему выбирают MVA Labs?</strong> Потому что мы не просто делаем «красиво». Мы создаём дизайн, который <strong>продаёт, удерживает и масштабирует</strong>. Каждый проект начинается с анализа данных: мы изучаем поведение вашей целевой аудитории, конкурентную среду и тренды в вашей нише. Только после этого мы приступаем к визуализации, используя ИИ для генерации сотен вариантов макетов. Это позволяет нам находить <strong>оптимальные визуальные решения</strong> за минимальное время.</p>
+                    <p style="margin-top: 12px;">Хотите <strong>умножить свой бизнес</strong> с помощью искусственного интеллекта? Оставьте заявку на бесплатную консультацию, и мы покажем вам, как выглядит <strong>маркетинг будущего</strong> уже сегодня. <strong>MVA Labs — Multiply Your Value by AI.</strong></p>
+                    ' ?>
+                </div>
             </div>
             
             <p class="footer__copy" style="margin-top: 32px;">
-                © 2026 MVA Labs. Все права защищены. 
+                <?= htmlspecialchars($settings['copyright'] ?? '© 2026 MVA Labs. Все права защищены.') ?>
                 <a href="#" style="color: #6B7280; text-decoration: underline;">Политика конфиденциальности</a>
             </p>
         </div>

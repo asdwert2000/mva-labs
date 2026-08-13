@@ -1,23 +1,58 @@
 <?php
 // ============================================
-// КОНФИГУРАЦИЯ MVA LABS ADMIN
+// КОНФИГУРАЦИЯ АДМИН-ПАНЕЛИ MVA LABS
 // ============================================
 
-// Путь к SQLite-базе (файл создастся автоматически)
-define('DB_PATH', __DIR__ . '/../data/admin.sqlite');
+// ===== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ =====
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'mva_labs');
+define('DB_USER', 'mva_labs');
+define('DB_PASS', 'jlxV9RpFwDGsBLSfIUPW');
 
-// Адрес сайта (без слэша в конце)
-define('SITE_URL', 'http://103.249.134.60');
+// ===== НАСТРОЙКИ АДМИНКИ =====
+define('ADMIN_PATH', '/admin/');
+define('UPLOAD_PATH', __DIR__ . '/assets/uploads/');
+define('UPLOAD_URL', '/admin/assets/uploads/');
 
-// Параметры сессии
-define('SESSION_NAME', 'mva_admin_session');
-define('SESSION_LIFETIME', 86400); // 24 часа
+// ===== ПОДКЛЮЧЕНИЕ К БД =====
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die('Ошибка подключения к базе данных: ' . $e->getMessage());
+}
 
-// Лимит загрузки изображений (байт) — 5 МБ
-define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
+// ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ НАСТРОЕК =====
+function getSettings($pdo) {
+    $stmt = $pdo->query("SELECT * FROM settings");
+    $settings = [];
+    while ($row = $stmt->fetch()) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+    return $settings;
+}
 
-// Разрешённые типы файлов для загрузки
-define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif']);
+// ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ КОНТЕНТА СТРАНИЦЫ =====
+function getPageContent($pdo, $key) {
+    $stmt = $pdo->prepare("SELECT * FROM pages WHERE page_key = ?");
+    $stmt->execute([$key]);
+    return $stmt->fetch();
+}
 
-// Каталог для загружаемых изображений
-define('UPLOAD_DIR', __DIR__ . '/assets/uploads');
+// ===== ОБНОВЛЕНИЕ КОНТЕНТА =====
+function updatePageContent($pdo, $key, $data) {
+    $sql = "UPDATE pages SET 
+            title = :title, 
+            content = :content, 
+            meta_title = :meta_title, 
+            meta_description = :meta_description, 
+            meta_keywords = :meta_keywords 
+            WHERE page_key = :page_key";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute($data);
+}
+
+// ЗАПУСКАЕМ СЕССИЮ
+session_start();
+?>
