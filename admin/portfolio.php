@@ -9,6 +9,15 @@ $id = $_GET['id'] ?? null;
 
 // УДАЛЕНИЕ
 if ($action === 'delete' && $id) {
+    $stmt = $pdo->prepare("SELECT image_url FROM portfolio WHERE id = ?");
+    $stmt->execute([$id]);
+    $oldImage = $stmt->fetchColumn();
+    if ($oldImage && strpos($oldImage, UPLOAD_URL) === 0) {
+        $filePath = UPLOAD_PATH . basename($oldImage);
+        if (file_exists($filePath)) {
+            @unlink($filePath);
+        }
+    }
     $stmt = $pdo->prepare("DELETE FROM portfolio WHERE id = ?");
     $stmt->execute([$id]);
     header('Location: /admin/portfolio.php?deleted=1');
@@ -24,18 +33,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gradient = $_POST['gradient'] ?? '';
     $sort_order = (int)($_POST['sort_order'] ?? 0);
     $active = isset($_POST['active']) ? 1 : 0;
-    
-    if ($action === 'edit' && $id) {
+    $imageUrl = $_POST['existing_image'] ?? '';
+
+    // ===== ОБРАБОТКА ЗАГРУЗКИ ИЗОБРАЖЕНИЯ =====
+    if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
+        if (!in_array($ext, $allowed, true)) {
+            $error = 'Недопустимый формат файла. Разрешено: ' . implode(', ', $allowed);
+        } elseif ($_FILES['image']['size'] > 5 * 1024 * 1024) {
+            $error = 'Файл слишком большой (максимум 5 МБ).';
+        } else {
+            if (!is_dir(UPLOAD_PATH)) {
+                mkdir(UPLOAD_PATH, 0755, true);
+            }
+            $filename = 'portfolio_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            if (move_uploaded_file($_FILES['image']['tmp_name'], UPLOAD_PATH . $filename)) {
+                $imageUrl = UPLOAD_URL . $filename;
+
+                // Удаляем старое изображение при редактировании
+                if ($action === 'edit' && $id) {
+                    $stmt = $pdo->prepare("SELECT image_url FROM portfolio WHERE id = ?");
+                    $stmt->execute([$id]);
+                    $oldImage = $stmt->fetchColumn();
+                    if ($oldImage && strpos($oldImage, UPLOAD_URL) === 0) {
+                        @unlink(UPLOAD_PATH . basename($oldImage));
+                    }
+                }
+            } else {
+                $error = 'Не удалось сохранить файл на сервере.';
+            }
+        }
+    }
+
+    if (!empty($error)) {
+        $errorMsg = $error;
+    } else if ($action === 'edit' && $id) {
         $stmt = $pdo->prepare("UPDATE portfolio SET 
-            category = ?, title = ?, description = ?, result = ?, gradient = ?, sort_order = ?, active = ? 
+            category = ?, title = ?, description = ?, result = ?, gradient = ?, image_url = ?, sort_order = ?, active = ? 
             WHERE id = ?");
-        $stmt->execute([$category, $title, $description, $result, $gradient, $sort_order, $active, $id]);
+        $stmt->execute([$category, $title, $description, $result, $gradient, $imageUrl, $sort_order, $active, $id]);
         header('Location: /admin/portfolio.php?updated=1');
         exit;
     } else {
-        $stmt = $pdo->prepare("INSERT INTO portfolio (category, title, description, result, gradient, sort_order, active) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$category, $title, $description, $result, $gradient, $sort_order, $active]);
+        $stmt = $pdo->prepare("INSERT INTO portfolio (category, title, description, result, gradient, image_url, sort_order, active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$category, $title, $description, $result, $gradient, $imageUrl, $sort_order, $active]);
         header('Location: /admin/portfolio.php?added=1');
         exit;
     }
@@ -105,7 +148,10 @@ $categories = ['sites' => 'Сайты', 'apps' => 'Приложения', 'strat
             <?php if ($action === 'add' || $action === 'edit'): ?>
                 <div class="form-card">
                     <h2><?= $action === 'edit' ? '✏️ Редактировать работу' : '➕ Новая работа в портфолио' ?></h2>
-                    <form method="POST">
+                    <?php if (!empty($errorMsg)): ?>
+                        <div class="alert alert-error">❌ <?= htmlspecialchars($errorMsg) ?></div>
+                    <?php endif; ?>
+                    <form method="POST" enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Категория</label>
@@ -116,10 +162,6 @@ $categories = ['sites' => 'Сайты', 'apps' => 'Приложения', 'strat
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Сортировка</label>
-                                <input type="number" name="sort_order" value="<?= $editItem['sort_order'] ?? 0 ?>" class="form-control">
                             </div>
                         </div>
                         
@@ -141,6 +183,22 @@ $categories = ['sites' => 'Сайты', 'apps' => 'Приложения', 'strat
                             <div class="form-group">
                                 <label>Градиент (например: #2D1B69, #120A2B)</label>
                                 <input type="text" name="gradient" value="<?= htmlspecialchars($editItem['gradient'] ?? '#2D1B69, #120A2B') ?>" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Изображение</label>
+                                <input type="file" name="image" accept="image/*" class="form-control">
+                                <input type="hidden" name="existing_image" value="<?= htmlspecialchars($editItem['image_url'] ?? '') ?>">
+                                <p class="form-hint">JPG, PNG, WebP, GIF, SVG до 5 МБ. Если не выбрано — останется текущее/градиент.</p>
+                                <?php if (!empty($editItem['image_url'])): ?>
+                                    <img src="<?= htmlspecialchars($editItem['image_url']) ?>" alt="" class="thumb-preview">
+                                <?php endif; ?>
+                            </div>
+                            <div class="form-group">
+                                <label>Сортировка</label>
+                                <input type="number" name="sort_order" value="<?= $editItem['sort_order'] ?? 0 ?>" class="form-control">
                             </div>
                         </div>
                         
@@ -170,6 +228,9 @@ $categories = ['sites' => 'Сайты', 'apps' => 'Приложения', 'strat
                         <?php else: ?>
                             <?php foreach ($items as $item): ?>
                                 <div class="portfolio-item">
+                                    <?php if (!empty($item['image_url'])): ?>
+                                        <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="" class="portfolio-item__thumb">
+                                    <?php endif; ?>
                                     <div class="portfolio-item__info">
                                         <strong><?= htmlspecialchars($item['title']) ?></strong>
                                         <span style="color: #9CA3AF; font-size: 0.85rem;"><?= htmlspecialchars($item['result']) ?></span>
